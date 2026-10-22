@@ -8,6 +8,8 @@ REPO = 'hnust-campus-3d'
 BASE = '/hnust-campus-3d/'
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOKEN = open(os.path.join(os.environ['TEMP'], 'gh_token.txt'), encoding='utf-8').read().strip()
+PROXY = os.environ.get('HTTPS_PROXY') or 'http://127.0.0.1:7897'
+OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({'http': PROXY, 'https': PROXY}))
 
 def api(method, path, data=None, raw=False):
     url = 'https://api.github.com' + path
@@ -22,13 +24,19 @@ def api(method, path, data=None, raw=False):
         body = json.dumps(data).encode('utf-8')
         headers['Content-Type'] = 'application/json'
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
-    try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            content = r.read()
-            return json.loads(content) if content else {}
-    except urllib.error.HTTPError as e:
-        print('HTTP', e.code, method, path, e.read().decode('utf-8', 'replace')[:500])
-        raise
+    last = None
+    for attempt in range(4):
+        try:
+            with OPENER.open(req, timeout=90) as r:
+                content = r.read()
+                return json.loads(content) if content else {}
+        except urllib.error.HTTPError as e:
+            print('HTTP', e.code, method, path, e.read().decode('utf-8', 'replace')[:500])
+            raise
+        except Exception as e:
+            last = e
+            time.sleep(2 + attempt * 2)
+    raise last
 
 def create_blob(data_bytes):
     return api('POST', f'/repos/{OWNER}/{REPO}/git/blobs',
