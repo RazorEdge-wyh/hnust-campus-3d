@@ -555,9 +555,9 @@ tours = [
      'stops': ['southGate', 'yuehu', 'sakura', 'studentCenter']},
     {'id': 'north-axis', 'name': '北门·教学轴线', 'subtitle': '北门 → 知行楼 → 教学楼群 → 图书馆', 'color': '#3a6bbf',
      'stops': ['northGate', 'zhixing', 'teach8', 'yifu', 'library']},
-    {'id': 'engineering-art', 'name': '工科与艺术', 'subtitle': '土木工程学院 → 工程训练中心 → 齐白石艺术馆 → 博物馆', 'color': '#b2734b',
+    {'id': 'engineering-art', 'name': '工科与艺术', 'subtitle': '土木工程学院 → 工程训练中心 → 齐白石艺术馆 → 博物馆', 'color': '#c2871f',
      'stops': ['civil', 'training', 'qibaishi', 'museum']},
-    {'id': 'sports-life', 'name': '运动与生活', 'subtitle': '田径场、体育馆、食堂与宿舍', 'color': '#588574',
+    {'id': 'sports-life', 'name': '运动与生活', 'subtitle': '田径场、体育馆、食堂与宿舍', 'color': '#2f6bc4',
      'stops': ['field1', 'gym', 'dining', 'dorm']},
 ]
 eras = [
