@@ -90,7 +90,7 @@ function World(props:{state:SceneState;command:CameraCommand;onSelect:(id:string
  const year=eras.find(e=>e.id===props.state.era)?.year??2025;
  return <><Lighting state={props.state}/><StaticCampus state={props.state}/><Trees state={props.state}/><Flowers state={props.state}/><CampusActivity activity={props.state.activity}/>{landmarks.map(l=>{const reference=false;return <group key={l.id} position={[l.position[0],.65,l.position[1]]} rotation={[0,l.rotation??0,0]} onClick={e=>{if(e.delta>4)return;e.stopPropagation();props.onSelect(l.id);}} visible={true}>
  <LandmarkModel landmark={l} season={props.state.season} active={props.state.selected===l.id} year={year}/>
- {props.state.selected===l.id&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,.5,0]}><ringGeometry args={[Math.max(l.size[0],l.size[2])*.6,Math.max(l.size[0],l.size[2])*.6+1.5,64]}/><meshBasicMaterial color="#9c4baf" transparent opacity={.45} depthWrite={false}/></mesh>}
+ {props.state.selected===l.id&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,.5,0]}><ringGeometry args={[Math.max(l.size[0],l.size[2])*.6,Math.max(l.size[0],l.size[2])*.6+1.5,64]}/><meshBasicMaterial color="#f1a90d" transparent opacity={.5} depthWrite={false}/></mesh>}
  <NameTag landmark={l} state={props.state} onSelect={props.onSelect}/>
  </group>;})}
 
