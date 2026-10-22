@@ -1,0 +1,7 @@
+node_modules
+.npm-cache
+artifacts
+docs/screenshots
+.tools
+.git
+*.tsbuildinfo
