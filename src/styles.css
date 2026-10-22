@@ -14,3 +14,7 @@
 
 .author-credit{font-size:11px;color:#5c6f88;margin:-8px 0 16px;letter-spacing:.5px}
 .calibration-author{font-size:10px;color:#9cb3d9}
+
+.scene-credit{position:absolute;right:24px;bottom:122px;font-size:10px;letter-spacing:.6px;color:#5c6f88;opacity:.5;pointer-events:none;z-index:22}
+.author-credit{font-size:10px;color:#5c6f88;margin:-8px 0 16px;letter-spacing:.4px}
+@media(max-width:760px){.scene-credit{display:none}}
