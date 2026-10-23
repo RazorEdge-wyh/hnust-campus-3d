@@ -11,7 +11,7 @@ import { seededRandom } from '../state';
 const transform=new THREE.Object3D();
 const originTarget:[number,number,number]=[0,0,0];
 const seasonal={spring:['#578353','#7eaa67','#a9c082'],summer:['#3f7350','#548858','#83a65e'],autumn:['#bd763a','#d4a44c','#8d8645'],winter:['#849b91','#a3b7ab','#c1cec7']};
-const typicalLabels=new Set(['southGate','northGate','oldGate','yuehu','sakura','library','museum','zhixing','field1','gym','studentCenter','dorm','qibaishi']);
+const typicalLabels=new Set(['southGate','northGate','oldGate','yuehu','sakura','library','museum','zhixing','lizhi','field1','gym','studentCenter','dorm','qibaishi']);
 const setTransform=(mesh:THREE.InstancedMesh,i:number,x:number,y:number,z:number,sx:number,sy:number,sz:number,ry=0)=>{transform.position.set(x,y,z);transform.scale.set(sx,sy,sz);transform.rotation.set(0,ry,0);transform.updateMatrix();mesh.setMatrixAt(i,transform.matrix);};
 
 function StaticCampus({state}:{state:SceneState}){
@@ -86,9 +86,56 @@ function Lighting({state}:{state:SceneState}){
  return <><color attach="background" args={[night?'#253549':daylight<.4?'#e2e5ec':'#e4edf0']}/><fog attach="fog" args={[night?'#253549':daylight<.4?'#e2e5ec':'#e4edf0',3400,6700]}/><ambientLight intensity={night?.55:.35} color={night?'#9aaed7':'#fff4e5'}/><hemisphereLight args={[night?'#8a99c0':'#e6f3ff','#769858',night?.45:.8]}/><directionalLight ref={sun} position={[Math.cos(angle)*1900,Math.max(220,daylight*2200),-1200]} intensity={night?.18:daylight<.4?1.6:2} color={daylight<.4?'#ffdeb0':'#fff0d7'} castShadow={state.quality!=='low'} shadow-mapSize={[2048,2048]} shadow-bias={-.0003} shadow-normalBias={1.4}/></>;
 }
 
+
+function CrowdFlow({activity}:{activity:number}){
+ const heads=useRef<THREE.InstancedMesh>(null),glow=useRef<THREE.InstancedMesh>(null),trail=useRef<THREE.LineSegments>(null);
+ const {invalidate}=useThree();
+ const MAX=320;
+ const agents=useMemo(()=>{const rnd=seededRandom(20261023);const pool=roads.filter(r=>r.points.length>1);const out:{ax:number;az:number;bx:number;bz:number;off:number;speed:number;dir:number;color:string}[]=[];for(let n=0;n<1200&&out.length<MAX;n++){const road=pool[Math.floor(rnd()*pool.length)];if(!road||road.points.length<2)continue;const i=Math.floor(rnd()*(road.points.length-1));const a=road.points[i],b=road.points[i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<6)continue;out.push({ax:a[0],az:a[1],bx:b[0],bz:b[1],off:rnd(),speed:.008+rnd()*.022,dir:rnd()>.5?1:-1,color:['#4d9be6','#f1c674','#eef4ff','#6fd0c8'][out.length%4]});}return out;},[]);
+ const count=Math.min(agents.length,Math.max(0,Math.round(activity*4)));
+ const posArr=useMemo(()=>new Float32Array(MAX*2*3),[]);
+ const colArr=useMemo(()=>new Float32Array(MAX*2*3),[]);
+ useEffect(()=>{
+  if(heads.current&&glow.current){heads.current.count=count;glow.current.count=count;agents.slice(0,count).forEach((a,i)=>{const c=new THREE.Color(a.color);heads.current!.setColorAt(i,c);glow.current!.setColorAt(i,c);});if(heads.current.instanceColor)heads.current.instanceColor.needsUpdate=true;if(glow.current.instanceColor)glow.current.instanceColor.needsUpdate=true;}
+  if(trail.current)trail.current.geometry.setDrawRange(0,count*2);
+  invalidate();
+ },[count,agents,invalidate]);
+ useFrame(({clock})=>{
+  if(!heads.current||!glow.current||!trail.current||!count)return;
+  const t=clock.elapsedTime;
+  const pa=trail.current.geometry.attributes.position as THREE.BufferAttribute;
+  const ca=trail.current.geometry.attributes.color as THREE.BufferAttribute;
+  const pos=pa.array as Float32Array, col=ca.array as Float32Array;
+  for(let i=0;i<count;i++){
+   const a=agents[i];
+   const u=((a.off+t*a.speed*a.dir)%1+1)%1;
+   const x=a.ax+(a.bx-a.ax)*u, z=a.az+(a.bz-a.az)*u;
+   const ut=Math.max(0,Math.min(1,u-a.dir*.05));
+   const xt=a.ax+(a.bx-a.ax)*ut, zt=a.az+(a.bz-a.az)*ut;
+   const bob=Math.sin(t*2.2+a.off*20)*.18;
+   setTransform(heads.current,i,x,2.7+bob,z,2.4,2.4,2.4);
+   setTransform(glow.current,i,x,2.7+bob,z,5.6,5.6,5.6);
+   const c=new THREE.Color(a.color);
+   pos[i*6]=xt;pos[i*6+1]=2.5;pos[i*6+2]=zt;
+   pos[i*6+3]=x;pos[i*6+4]=2.7+bob;pos[i*6+5]=z;
+   col[i*6]=c.r*.25;col[i*6+1]=c.g*.25;col[i*6+2]=c.b*.25;
+   col[i*6+3]=c.r;col[i*6+4]=c.g;col[i*6+5]=c.b;
+  }
+  heads.current.instanceMatrix.needsUpdate=true;
+  glow.current.instanceMatrix.needsUpdate=true;
+  pa.needsUpdate=true;ca.needsUpdate=true;
+  invalidate();
+ });
+ return <group>
+  <instancedMesh ref={glow} args={[undefined,undefined,MAX]} frustumCulled={false}><sphereGeometry args={[1,10,8]}/><meshBasicMaterial transparent opacity={.16} blending={THREE.AdditiveBlending} depthWrite={false}/></instancedMesh>
+  <instancedMesh ref={heads} args={[undefined,undefined,MAX]} frustumCulled={false}><sphereGeometry args={[1,10,8]}/><meshBasicMaterial transparent opacity={.95}/></instancedMesh>
+  <lineSegments ref={trail} frustumCulled={false}><bufferGeometry><bufferAttribute attach="attributes-position" args={[posArr,3]}/><bufferAttribute attach="attributes-color" args={[colArr,3]}/></bufferGeometry><lineBasicMaterial vertexColors transparent opacity={.85} blending={THREE.AdditiveBlending} depthWrite={false}/></lineSegments>
+ </group>;
+}
+
 function World(props:{state:SceneState;command:CameraCommand;onSelect:(id:string)=>void;onManual:()=>void;apiRef:React.RefObject<SceneApi|null>;onReady:()=>void}){
  const year=eras.find(e=>e.id===props.state.era)?.year??2025;
- return <><Lighting state={props.state}/><StaticCampus state={props.state}/><Trees state={props.state}/><Flowers state={props.state}/><CampusActivity activity={props.state.activity}/>{landmarks.map(l=>{const reference=false;return <group key={l.id} position={[l.position[0],.65,l.position[1]]} rotation={[0,l.rotation??0,0]} onClick={e=>{if(e.delta>4)return;e.stopPropagation();props.onSelect(l.id);}} visible={true}>
+ return <><Lighting state={props.state}/><StaticCampus state={props.state}/><Trees state={props.state}/><Flowers state={props.state}/><CampusActivity activity={props.state.activity}/><CrowdFlow activity={props.state.activity}/>{landmarks.map(l=>{const reference=false;return <group key={l.id} position={[l.position[0],.65,l.position[1]]} rotation={[0,l.rotation??0,0]} onClick={e=>{if(e.delta>4)return;e.stopPropagation();props.onSelect(l.id);}} visible={true}>
  <LandmarkModel landmark={l} season={props.state.season} active={props.state.selected===l.id} year={year}/>
  {props.state.selected===l.id&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,.5,0]}><ringGeometry args={[Math.max(l.size[0],l.size[2])*.6,Math.max(l.size[0],l.size[2])*.6+1.5,64]}/><meshBasicMaterial color="#f1a90d" transparent opacity={.5} depthWrite={false}/></mesh>}
  <NameTag landmark={l} state={props.state} onSelect={props.onSelect}/>

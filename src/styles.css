@@ -18,3 +18,53 @@
 .scene-credit{position:absolute;right:24px;bottom:122px;font-size:10px;letter-spacing:.6px;color:#5c6f88;opacity:.5;pointer-events:none;z-index:22}
 .author-credit{font-size:10px;color:#5c6f88;margin:-8px 0 16px;letter-spacing:.4px}
 @media(max-width:760px){.scene-credit{display:none}}
+
+
+/* ===== 立志楼数字孪生模型查看器 ===== */
+.lizhi-trigger{margin-bottom:8px;background:#1e55af;color:#fff;border-color:#1e55af}
+.lizhi-modal{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:radial-gradient(circle at 50% -10%,#1b2b45 0%,#0e131a 58%,#0a0e13 100%);color:#e8eef7;font-family:Inter,"Microsoft YaHei",system-ui,sans-serif}
+.lizhi-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:18px 22px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.lizhi-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:1.5px;color:#8fb6e8;text-transform:uppercase}
+.lizhi-head h2{margin:6px 0 4px;font-family:"Noto Serif SC",STSong,SimSun,serif;font-size:24px;letter-spacing:2px}
+.lizhi-head p{margin:0;font-size:12px;color:#93a4bb}
+.lizhi-close{width:36px;height:36px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#dfe8f5;display:grid;place-items:center;cursor:pointer}
+.lizhi-close:hover{background:rgba(255,255,255,.14)}
+.lizhi-body{flex:1;min-height:0;display:grid;grid-template-columns:216px minmax(0,1fr) 264px;gap:14px;padding:14px 18px 18px}
+.lizhi-levels,.lizhi-info{min-height:0;overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.035);padding:10px}
+.lizhi-levels-head{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:1px;color:#8fb6e8;padding:4px 8px 10px}
+.lizhi-levels button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:9px 10px;border-radius:9px;border:1px solid transparent;background:transparent;color:#cbd7e7;text-align:left;cursor:pointer}
+.lizhi-levels button strong{font-size:13px;font-weight:600}
+.lizhi-levels button small{font-size:10px;color:#7f92aa}
+.lizhi-levels button:hover{background:rgba(255,255,255,.06)}
+.lizhi-levels button.active{background:rgba(30,85,175,.32);border-color:rgba(108,166,255,.5)}
+.lizhi-levels button.active small{color:#a9c6ef}
+.lizhi-stage{position:relative;min-height:0;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#0f141b}
+.lizhi-stage canvas{display:block;width:100%!important;height:100%!important}
+.lizhi-hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:11px;color:#93a4bb;background:rgba(8,12,17,.72);padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.08);white-space:nowrap}
+.lizhi-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#b9c8dd;font-size:13px;background:#0f141b;text-align:center;padding:24px}
+.lizhi-spinner{width:26px;height:26px;border-radius:50%;border:3px solid rgba(120,165,235,.25);border-top-color:#78a5eb;animation:lizhi-spin 1s linear infinite}
+@keyframes lizhi-spin{to{transform:rotate(360deg)}}
+.lizhi-info h3{margin:4px 6px 8px;font-size:15px;letter-spacing:1px}
+.lizhi-info h4{margin:14px 6px 8px;font-size:11px;color:#8fb6e8;letter-spacing:1.5px;font-weight:500}
+.lizhi-actions{display:flex;gap:6px;flex-wrap:wrap;padding:2px 4px 8px}
+.lizhi-actions button{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:6px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#cbd7e7;cursor:pointer}
+.lizhi-actions button.active{background:rgba(30,85,175,.4);border-color:rgba(108,166,255,.5)}
+.lizhi-current{padding:6px 6px 0}
+.lizhi-current p{font-size:11px;line-height:1.7;color:#9ee0b0;color:#a9b9cf;margin:0}
+.lizhi-current dl{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:10px 0 0;font-size:11px}
+.lizhi-current dt{color:#7f92aa}
+.lizhi-current dd{margin:0;text-align:right;color:#e2ebf8}
+.lizhi-cats div{display:flex;justify-content:space-between;font-size:11px;padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.05);color:#9fb2c9}
+.lizhi-cats div strong{color:#dfe8f5;font-weight:500}
+.lizhi-note{margin:12px 6px 2px;font-size:10px;line-height:1.6;color:#6f829b}
+@media(max-width:900px){
+ .lizhi-body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);padding:10px}
+ .lizhi-levels{display:flex;gap:6px;overflow-x:auto;padding:6px}
+ .lizhi-levels-head{display:none}
+ .lizhi-levels button{min-width:132px}
+ .lizhi-info{display:none}
+ .lizhi-stage{min-height:0}
+ .lizhi-head{padding:12px 14px}
+ .lizhi-head h2{font-size:19px}
+ .lizhi-head p{font-size:10px}
+}

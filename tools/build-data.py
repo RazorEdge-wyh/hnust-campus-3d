@@ -393,6 +393,12 @@ L['teach1'] = teaching_meta(1, '第一教学楼', '南校区 · 公共课堂')
 L['teach8'] = teaching_meta(8, '第八教学楼', '北校区 · 公共课堂')
 L['teach9'] = teaching_meta(9, '第九教学楼', '北校区 · 公共课堂')
 
+L['lizhi'] = dict(id='lizhi', name='立志楼', subtitle='北校区 · 真实 BIM 模型接入', category='teaching',
+    focus=['teaching'], model='footprint', style='教学楼 · Revit 几何 + 数字孪生',
+    description='立志楼是学校北校区的教学楼之一。这里接入了由 Revit 模型导出的真实几何：4032 个构件、404,626 个三角面、15 个标高，可在查看器中按楼层浏览柱、墙、门窗、楼梯等构件。',
+    facts=['几何来源：立志楼加楼梯版本.rvt（Revit 导出）', '4032 个构件 · 404,626 个三角面 · 15 个标高', '点击“打开立志楼数字孪生”可按楼层查看模型'],
+    sources=[SRC_SCHOOL, SRC_OSM])
+
 def dept_meta(i, name, subtitle, desc=None):
     return dict(id=i, name=name, subtitle=subtitle, category='department',
         focus=['department'], model='footprint', style='学院楼 · 院系与实验空间',
@@ -462,6 +468,7 @@ add_building_landmark('逸夫教学楼', L['yifu'])
 add_building_landmark('第一教学楼', L['teach1'])
 add_building_landmark('第八教学楼', L['teach8'])
 add_building_landmark('第九教学楼', L['teach9'])
+add_building_landmark('立志楼', L['lizhi'], height=24)
 add_building_landmark('商学院', L['business'])
 add_building_landmark('土木工程学院', L['civil'])
 add_building_landmark('外国语学院', L['foreign'])
@@ -554,7 +561,7 @@ tours = [
     {'id': 'south-lake', 'name': '南门·月湖', 'subtitle': '从南门进入，沿月湖走到樱花深处', 'color': '#1e55af',
      'stops': ['southGate', 'yuehu', 'sakura', 'studentCenter']},
     {'id': 'north-axis', 'name': '北门·教学轴线', 'subtitle': '北门 → 知行楼 → 教学楼群 → 图书馆', 'color': '#3a6bbf',
-     'stops': ['northGate', 'zhixing', 'teach8', 'yifu', 'library']},
+     'stops': ['northGate', 'lizhi', 'zhixing', 'teach8', 'yifu', 'library']},
     {'id': 'engineering-art', 'name': '工科与艺术', 'subtitle': '土木工程学院 → 工程训练中心 → 齐白石艺术馆 → 博物馆', 'color': '#b2734b',
      'stops': ['civil', 'training', 'qibaishi', 'museum']},
     {'id': 'sports-life', 'name': '运动与生活', 'subtitle': '田径场、体育馆、食堂与宿舍', 'color': '#588574',
