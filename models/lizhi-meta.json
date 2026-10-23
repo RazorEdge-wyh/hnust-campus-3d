@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "source": "立志楼加楼梯版本.rvt",
+  "isPlaceholder": false,
+  "units": "metres",
+  "generatedAt": "2026-10-23T01:39:03.872Z",
+  "levels": [
+    {
+      "id": "471225",
+      "name": "标高 10",
+      "elevation": -5.4,
+      "objects": 491,
+      "triangles": 10402
+    },
+    {
+      "id": "470978",
+      "name": "标高 9",
+      "elevation": -3.9,
+      "objects": 332,
+      "triangles": 26980
+    },
+    {
+      "id": "311",
+      "name": "标高 1",
+      "elevation": 0,
+      "objects": 496,
+      "triangles": 54272
+    },
+    {
+      "id": "694",
+      "name": "标高 2",
+      "elevation": 3.5999999999999996,
+      "objects": 350,
+      "triangles": 32972
+    },
+    {
+      "id": "421110",
+      "name": "标高 3",
+      "elevation": 7.20000000000034,
+      "objects": 381,
+      "triangles": 35546
+    },
+    {
+      "id": "421379",
+      "name": "标高 4",
+      "elevation": 10.800000000000336,
+      "objects": 352,
+      "triangles": 33684
+    },
+    {
+      "id": "421715",
+      "name": "标高 5",
+      "elevation": 14.400000000000333,
+      "objects": 394,
+      "triangles": 36028
+    },
+    {
+      "id": "421976",
+      "name": "标高 6",
+      "elevation": 18.000000000000334,
+      "objects": 417,
+      "triangles": 30566
+    },
+    {
+      "id": "644108",
+      "name": "屋顶标高6.5",
+      "elevation": 19.55,
+      "objects": 1,
+      "triangles": 60
+    },
+    {
+      "id": "660345",
+      "name": "屋顶标高6.6",
+      "elevation": 21,
+      "objects": 1,
+      "triangles": 16
+    },
+    {
+      "id": "422203",
+      "name": "标高 7",
+      "elevation": 21.600000000000335,
+      "objects": 189,
+      "triangles": 8534
+    },
+    {
+      "id": "660852",
+      "name": "屋顶标高7.6",
+      "elevation": 22.599999999999998,
+      "objects": 0,
+      "triangles": 0
+    },
+    {
+      "id": "661984",
+      "name": "屋顶标高7.23.1",
+      "elevation": 23.099999999999998,
+      "objects": 3,
+      "triangles": 46
+    },
+    {
+      "id": "662109",
+      "name": "屋顶标高7.24.6",
+      "elevation": 24.6,
+      "objects": 3,
+      "triangles": 44
+    },
+    {
+      "id": "422632",
+      "name": "标高 8",
+      "elevation": 24.899999999999995,
+      "objects": 2,
+      "triangles": 28
+    }
+  ],
+  "categories": [
+    {
+      "name": "Columns",
+      "count": 1544,
+      "triangles": 29938
+    },
+    {
+      "name": "Windows",
+      "count": 1065,
+      "triangles": 149788
+    },
+    {
+      "name": "Doors",
+      "count": 401,
+      "triangles": 25960
+    },
+    {
+      "name": "Walls",
+      "count": 386,
+      "triangles": 40644
+    },
+    {
+      "name": "Balusters",
+      "count": 256,
+      "triangles": 11992
+    },
+    {
+      "name": "Runs",
+      "count": 85,
+      "triangles": 20940
+    },
+    {
+      "name": "Railings",
+      "count": 81,
+      "triangles": 83740
+    },
+    {
+      "name": "Top Rails",
+      "count": 81,
+      "triangles": 15720
+    },
+    {
+      "name": "Stairs",
+      "count": 39,
+      "triangles": 22140
+    },
+    {
+      "name": "Landings",
+      "count": 39,
+      "triangles": 920
+    },
+    {
+      "name": "Supports",
+      "count": 21,
+      "triangles": 280
+    },
+    {
+      "name": "Roofs",
+      "count": 19,
+      "triangles": 578
+    },
+    {
+      "name": "Curtain Panels",
+      "count": 8,
+      "triangles": 722
+    },
+    {
+      "name": "Floors",
+      "count": 7,
+      "triangles": 1264
+    }
+  ],
+  "totals": {
+    "objects": 4032,
+    "levels": 15,
+    "triangles": 404626,
+    "categories": 14,
+    "sourceSizeMB": 37.96
+  },
+  "viewer": {
+    "scale": 0.6545507707002985,
+    "bbox": {
+      "min": [
+        -141.39190673828125,
+        -6.899999618530273,
+        -46.547515869140625
+      ],
+      "max": [
+        11.38463020324707,
+        28.90743637084961,
+        26.953691482543945
+      ]
+    }
+  }
+}
