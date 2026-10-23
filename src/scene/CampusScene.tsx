@@ -53,15 +53,6 @@ function Flowers({state}:{state:SceneState}){
  return <group><instancedMesh ref={branches} args={[undefined,undefined,180]}><cylinderGeometry args={[.7,1,1,4]}/><meshStandardMaterial color="#7d6955"/></instancedMesh><instancedMesh ref={lilac} args={[undefined,undefined,720]}><coneGeometry args={[1,1,6]}/><meshStandardMaterial roughness={1}/></instancedMesh><instancedMesh ref={cercis} args={[undefined,undefined,1080]}><icosahedronGeometry args={[1,0]}/><meshStandardMaterial color="#d97d9a" roughness={1}/></instancedMesh></group>;
 }
 
-function CampusActivity({activity}:{activity:number}){
- const heads=useRef<THREE.InstancedMesh>(null),bodies=useRef<THREE.InstancedMesh>(null),bikes=useRef<THREE.InstancedMesh>(null);
- const tracks=useMemo(()=>{const r=seededRandom(718);return Array.from({length:80},(_,i)=>{const road=roads[i%roads.length];const a=road.points[0],b=road.points[1]??a;return {a,b,offset:r(),speed:.005+r()*.006,color:['#806c90','#e2b15e','#e7e2d5','#64968d'][i%4]};});},[]);
- const count=Math.round(activity*.8),{invalidate}=useThree();
- useEffect(()=>{if(heads.current&&bodies.current&&bikes.current){heads.current.count=count;bodies.current.count=count;bikes.current.count=Math.floor(count/2);tracks.forEach((t,i)=>bodies.current!.setColorAt(i,new THREE.Color(t.color)));if(bodies.current.instanceColor)bodies.current.instanceColor.needsUpdate=true;invalidate();}},[count,tracks,invalidate]);
- useFrame(({clock})=>{if(!count||!heads.current||!bodies.current||!bikes.current)return;tracks.slice(0,count).forEach((p,i)=>{const t=(p.offset+clock.elapsedTime*p.speed)%1,x=THREE.MathUtils.lerp(p.a[0],p.b[0],t)+3,z=THREE.MathUtils.lerp(p.a[1],p.b[1],t)+3;setTransform(heads.current!,i,x,2.4,z,.42,.42,.42);setTransform(bodies.current!,i,x,1.35,z,.8,1.8,.65);if(i<count/2)setTransform(bikes.current!,i,x,1,z+1,1.8,.7,.45,Math.atan2(p.b[0]-p.a[0],p.b[1]-p.a[1]));});heads.current.instanceMatrix.needsUpdate=true;bodies.current.instanceMatrix.needsUpdate=true;bikes.current.instanceMatrix.needsUpdate=true;invalidate();});
- return <group><instancedMesh ref={heads} args={[undefined,undefined,80]}><sphereGeometry args={[1,5,4]}/><meshStandardMaterial color="#d6b399"/></instancedMesh><instancedMesh ref={bodies} args={[undefined,undefined,80]}><boxGeometry/><meshStandardMaterial/></instancedMesh><instancedMesh ref={bikes} args={[undefined,undefined,40]}><boxGeometry/><meshStandardMaterial color="#545777"/></instancedMesh></group>;
-}
-
 function NameTag({landmark,state,onSelect}:{landmark:Landmark;state:SceneState;onSelect:(id:string)=>void}){
  const [visible,setVisible]=useState(false);const last=useRef(false);
  useFrame(({camera})=>{const distance=camera.position.distanceTo(new THREE.Vector3(landmark.position[0],0,landmark.position[1]));const show=state.labels&&(state.selected===landmark.id||distance<190||(distance<4600&&typicalLabels.has(landmark.id)&&(window.innerWidth>760||!['gate','library'].includes(landmark.id))));if(last.current!==show){last.current=show;setVisible(show);}});
@@ -135,7 +126,7 @@ function CrowdFlow({activity}:{activity:number}){
 
 function World(props:{state:SceneState;command:CameraCommand;onSelect:(id:string)=>void;onManual:()=>void;apiRef:React.RefObject<SceneApi|null>;onReady:()=>void}){
  const year=eras.find(e=>e.id===props.state.era)?.year??2025;
- return <><Lighting state={props.state}/><StaticCampus state={props.state}/><Trees state={props.state}/><Flowers state={props.state}/><CampusActivity activity={props.state.activity}/><CrowdFlow activity={props.state.activity}/>{landmarks.map(l=>{const reference=false;return <group key={l.id} position={[l.position[0],.65,l.position[1]]} rotation={[0,l.rotation??0,0]} onClick={e=>{if(e.delta>4)return;e.stopPropagation();props.onSelect(l.id);}} visible={true}>
+ return <><Lighting state={props.state}/><StaticCampus state={props.state}/><Trees state={props.state}/><Flowers state={props.state}/><CrowdFlow activity={props.state.activity}/>{landmarks.map(l=>{const reference=false;return <group key={l.id} position={[l.position[0],.65,l.position[1]]} rotation={[0,l.rotation??0,0]} onClick={e=>{if(e.delta>4)return;e.stopPropagation();props.onSelect(l.id);}} visible={true}>
  <LandmarkModel landmark={l} season={props.state.season} active={props.state.selected===l.id} year={year}/>
  {props.state.selected===l.id&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,.5,0]}><ringGeometry args={[Math.max(l.size[0],l.size[2])*.6,Math.max(l.size[0],l.size[2])*.6+1.5,64]}/><meshBasicMaterial color="#f1a90d" transparent opacity={.5} depthWrite={false}/></mesh>}
  <NameTag landmark={l} state={props.state} onSelect={props.onSelect}/>
