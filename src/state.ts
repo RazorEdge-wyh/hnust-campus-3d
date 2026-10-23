@@ -1,5 +1,5 @@
 import type { SceneState, Vec3 } from './types.ts';
-export const defaults: SceneState = {version:2,season:'spring',time:16.5,trees:100,lilac:65,cercis:75,activity:35,exposure:1.05,quality:'auto',seed:1911,era:'today',labels:true,selected:null,view:'isometric'};
+export const defaults: SceneState = {version:2,season:'spring',time:15,trees:100,lilac:65,cercis:75,activity:35,exposure:1.05,quality:'auto',seed:1911,era:'today',labels:true,selected:null,view:'isometric'};
 const bounded=(v:unknown,min:number,max:number,fallback:number)=>typeof v==='number'&&Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback;
 const tuple=(v:unknown):v is Vec3=>Array.isArray(v)&&v.length===3&&v.every(n=>typeof n==='number'&&Number.isFinite(n)&&Math.abs(n)<20000);
 export function sanitizeState(input:unknown):SceneState {

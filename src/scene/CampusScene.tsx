@@ -10,8 +10,8 @@ import { seededRandom } from '../state';
 
 const transform=new THREE.Object3D();
 const originTarget:[number,number,number]=[0,0,0];
-const seasonal={spring:['#578353','#7eaa67','#a9c082'],summer:['#3f7350','#548858','#83a65e'],autumn:['#bd763a','#d4a44c','#8d8645'],winter:['#849b91','#a3b7ab','#c1cec7']};
-const typicalLabels=new Set(['southGate','northGate','oldGate','yuehu','sakura','library','museum','zhixing','lizhi','field1','gym','studentCenter','dorm','qibaishi']);
+const seasonal={spring:['#7c9b75','#96b38a','#b4c59a'],summer:['#5d896d','#7b9f79','#a0b58c'],autumn:['#b08a5d','#c5aa72','#a3a17b'],winter:['#a4b5ac','#bdc9bf','#d1d8ce']};
+const typicalLabels=new Set(['southGate','northGate','yuehu','sakura','zhixing','lizhi']);
 const setTransform=(mesh:THREE.InstancedMesh,i:number,x:number,y:number,z:number,sx:number,sy:number,sz:number,ry=0)=>{transform.position.set(x,y,z);transform.scale.set(sx,sy,sz);transform.rotation.set(0,ry,0);transform.updateMatrix();mesh.setMatrixAt(i,transform.matrix);};
 
 function StaticCampus({state}:{state:SceneState}){
@@ -20,7 +20,7 @@ function StaticCampus({state}:{state:SceneState}){
  const shapes=useMemo(()=>landscapes.map(l=>({...l,geometry:polygonGeometry(l.points)})),[]);
  const lines=useMemo(()=>mergedBoxes(roads.filter(r=>r.major).flatMap(r=>r.points.slice(1).flatMap((b,i)=>{const a=r.points[i],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);return Array.from({length:Math.floor(len/28)},(_,j)=>{const t=(j+.5)*28/len;return {p:new THREE.Vector3(a[0]+dx*t,.54,a[1]+dz*t),s:new THREE.Vector3(.7,.07,10),r:Math.atan2(dx,dz)};});}))),[]);
  const history=state.era!=='today';
- const grass=state.season==='winter'?'#cdd9ca':state.season==='autumn'?'#9d9e58':'#6e9b58';
+ const grass=state.season==='winter'?'#dee3d8':state.season==='autumn'?'#c6c5a3':'#a9bf97';
  return <group>
   <mesh receiveShadow position={[0,-8,0]}><boxGeometry args={[2400,15,3300]}/><meshStandardMaterial color="#dad9ca" roughness={.95}/></mesh>
   <mesh receiveShadow position={[0,.01,0]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[2395,3295]}/><meshStandardMaterial color={grass} roughness={1}/></mesh>
@@ -38,7 +38,7 @@ function Trees({state}:{state:SceneState}){
  const data=useMemo(()=>createTrees(state.seed,buildings,landmarks,landscapes,roads),[state.seed]);
  const count=Math.min(data.length,Math.round(data.length*state.trees/150));
  const {invalidate}=useThree();
- useEffect(()=>{if(!trunk.current||!crown.current)return;const palette=seasonal[state.season];data.forEach((p,i)=>{setTransform(trunk.current!,i,p.x,3.9*p.scale,p.z,1.25*p.scale,7.3*p.scale,1.25*p.scale);setTransform(crown.current!,i,p.x,11.2*p.scale,p.z,5.5*p.scale,7*p.scale,5.5*p.scale);crown.current!.setColorAt(i,new THREE.Color(palette[Math.floor(p.shade*3)]));});trunk.current.instanceMatrix.needsUpdate=true;crown.current.instanceMatrix.needsUpdate=true;if(crown.current.instanceColor)crown.current.instanceColor.needsUpdate=true;invalidate();},[data,state.season,invalidate]);
+ useEffect(()=>{if(!trunk.current||!crown.current)return;const palette=seasonal[state.season];data.forEach((p,i)=>{setTransform(trunk.current!,i,p.x,3.9*p.scale,p.z,1.25*p.scale,7.3*p.scale,1.25*p.scale);setTransform(crown.current!,i,p.x,12*p.scale,p.z,9*p.scale,9*p.scale,9*p.scale);crown.current!.setColorAt(i,new THREE.Color(palette[Math.floor(p.shade*3)]));});trunk.current.instanceMatrix.needsUpdate=true;crown.current.instanceMatrix.needsUpdate=true;if(crown.current.instanceColor)crown.current.instanceColor.needsUpdate=true;invalidate();},[data,state.season,invalidate]);
  useEffect(()=>{if(trunk.current&&crown.current){trunk.current.count=count;crown.current.count=count;invalidate();}},[count,invalidate]);
  return <group><instancedMesh ref={trunk} args={[undefined,undefined,1750]} castShadow><cylinderGeometry args={[.7,1,1,5]}/><meshStandardMaterial color="#887260" roughness={1}/></instancedMesh><instancedMesh ref={crown} args={[undefined,undefined,1750]} castShadow><icosahedronGeometry args={[1,1]}/><meshStandardMaterial roughness={1}/></instancedMesh></group>;
 }
@@ -74,80 +74,40 @@ function Lighting({state}:{state:SceneState}){
  useEffect(()=>{gl.toneMappingExposure=state.exposure;invalidate();},[gl,state.exposure,invalidate]);
  const sun=useRef<THREE.DirectionalLight>(null);
  useEffect(()=>{if(sun.current){const c=sun.current.shadow.camera;c.left=-1500;c.right=1500;c.top=1500;c.bottom=-1500;c.near=10;c.far=4500;c.updateProjectionMatrix();}},[]);
- return <><color attach="background" args={[night?'#253549':daylight<.4?'#e2e5ec':'#e4edf0']}/><fog attach="fog" args={[night?'#253549':daylight<.4?'#e2e5ec':'#e4edf0',3400,6700]}/><ambientLight intensity={night?.55:.35} color={night?'#9aaed7':'#fff4e5'}/><hemisphereLight args={[night?'#8a99c0':'#e6f3ff','#769858',night?.45:.8]}/><directionalLight ref={sun} position={[Math.cos(angle)*1900,Math.max(220,daylight*2200),-1200]} intensity={night?.18:daylight<.4?1.6:2} color={daylight<.4?'#ffdeb0':'#fff0d7'} castShadow={state.quality!=='low'} shadow-mapSize={[2048,2048]} shadow-bias={-.0003} shadow-normalBias={1.4}/></>;
+ return <><color attach="background" args={[night?'#293c4c':daylight<.4?'#ece5db':'#eef0e8']}/><fog attach="fog" args={[night?'#293c4c':daylight<.4?'#ece5db':'#eef0e8',6500,13000]}/><ambientLight intensity={night?.55:.45} color={night?'#9aaed7':'#fff9ee'}/><hemisphereLight args={[night?'#8a99c0':'#f1f6fa','#b1b9a2',night?.45:.7]}/><directionalLight ref={sun} position={[Math.cos(angle)*1900,Math.max(220,daylight*2200),-1200]} intensity={night?.18:daylight<.4?1.6:2} color={daylight<.4?'#ffe3be':'#fff4df'} castShadow={state.quality!=='low'} shadow-mapSize={[2048,2048]} shadow-bias={-.0003} shadow-normalBias={1.4}/></>;
 }
 
 
 function CrowdFlow({activity}:{activity:number}){
- const points=useRef<THREE.Points>(null),halo=useRef<THREE.Points>(null),trail=useRef<THREE.LineSegments>(null);
+ const dots=useRef<THREE.InstancedMesh>(null);
  const {invalidate}=useThree();
  const MAX=320;
- const palette=['#f6c46a','#6fb6f0','#9fe3d0','#ffe1b0'];
- const agents=useMemo(()=>{const rnd=seededRandom(20261023);const pool=roads.filter(r=>r.points.length>1);const out:{ax:number;az:number;bx:number;bz:number;off:number;speed:number;dir:number;color:string}[]=[];for(let n=0;n<1200&&out.length<MAX;n++){const road=pool[Math.floor(rnd()*pool.length)];if(!road||road.points.length<2)continue;const i=Math.floor(rnd()*(road.points.length-1));const a=road.points[i],b=road.points[i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<6)continue;out.push({ax:a[0],az:a[1],bx:b[0],bz:b[1],off:rnd(),speed:.006+rnd()*.016,dir:rnd()>.5?1:-1,color:palette[out.length%palette.length]});}return out;},[]);
- const count=Math.min(agents.length,Math.max(0,Math.round(activity*3.6)));
- const pos=useMemo(()=>new Float32Array(MAX*3),[]);
- const col=useMemo(()=>new Float32Array(MAX*3),[]);
- const tpos=useMemo(()=>new Float32Array(MAX*6),[]);
- const tcol=useMemo(()=>new Float32Array(MAX*6),[]);
- const sprite=useMemo(()=>{const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d')!;const grad=ctx.createRadialGradient(64,64,0,64,64,64);grad.addColorStop(0,'rgba(255,255,255,1)');grad.addColorStop(.22,'rgba(255,255,255,.9)');grad.addColorStop(.55,'rgba(255,255,255,.22)');grad.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=grad;ctx.fillRect(0,0,128,128);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return tex;},[]);
+ const palette=['#ffd9a0','#9fd8e6','#b7e3c8','#fff1d6'];
+ const agents=useMemo(()=>{const rnd=seededRandom(20261023);const pool=roads.filter(r=>r.points.length>1);const out:{ax:number;az:number;bx:number;bz:number;off:number;speed:number;dir:number;color:string;size:number}[]=[];for(let n=0;n<1200&&out.length<MAX;n++){const road=pool[Math.floor(rnd()*pool.length)];if(!road||road.points.length<2)continue;const i=Math.floor(rnd()*(road.points.length-1));const a=road.points[i],b=road.points[i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<6)continue;out.push({ax:a[0],az:a[1],bx:b[0],bz:b[1],off:rnd(),speed:.006+rnd()*.016,dir:rnd()>.5?1:-1,color:palette[out.length%palette.length],size:2.2+rnd()*1.0});}return out;},[]);
+ const count=Math.min(agents.length,Math.max(0,Math.round(activity*2.2)));
  useEffect(()=>{
-  if(points.current)points.current.geometry.setDrawRange(0,count);
-  if(halo.current)halo.current.geometry.setDrawRange(0,count);
-  if(trail.current)trail.current.geometry.setDrawRange(0,count*2);
-  agents.slice(0,count).forEach((a,i)=>{const c=new THREE.Color(a.color);col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;});
-  const ca=points.current?.geometry.attributes.color;if(ca)ca.needsUpdate=true;
+  if(dots.current){dots.current.count=count;agents.slice(0,count).forEach((a,i)=>dots.current!.setColorAt(i,new THREE.Color(a.color)));if(dots.current.instanceColor)dots.current.instanceColor.needsUpdate=true;}
   invalidate();
- },[count,agents,col,invalidate]);
+ },[count,agents,invalidate]);
  useFrame(({clock})=>{
-  if(!points.current||!trail.current||!count)return;
+  if(!dots.current||!count)return;
   const t=clock.elapsedTime;
-  const ha=halo.current?.geometry.attributes.position as THREE.BufferAttribute|undefined;
-  const hc=halo.current?.geometry.attributes.color as THREE.BufferAttribute|undefined;
-  const pa=points.current.geometry.attributes.position as THREE.BufferAttribute;
-  const ca=points.current.geometry.attributes.color as THREE.BufferAttribute;
-  const ta=trail.current.geometry.attributes.position as THREE.BufferAttribute;
-  const tca=trail.current.geometry.attributes.color as THREE.BufferAttribute;
-  const pArr=pa.array as Float32Array,pCol=ca.array as Float32Array,tArr=ta.array as Float32Array,tCol=tca.array as Float32Array;
   for(let i=0;i<count;i++){
    const a=agents[i];
    const u=((a.off+t*a.speed*a.dir)%1+1)%1;
    const x=a.ax+(a.bx-a.ax)*u, z=a.az+(a.bz-a.az)*u;
-   const ut=Math.max(0,Math.min(1,u-a.dir*.1));
-   const xt=a.ax+(a.bx-a.ax)*ut, zt=a.az+(a.bz-a.az)*ut;
-   const bob=Math.sin(t*1.6+a.off*18)*.16;
-   pArr[i*3]=x;pArr[i*3+1]=2.8+bob;pArr[i*3+2]=z;
-   pCol[i*3]=pCol[i*3]; // static, but keep for clarity
-   tArr[i*6]=xt;tArr[i*6+1]=2.45;tArr[i*6+2]=zt;
-   tArr[i*6+3]=x;tArr[i*6+4]=2.8+bob;tArr[i*6+5]=z;
-   const c=new THREE.Color(a.color);
-   tCol[i*6]=c.r*.12;tCol[i*6+1]=c.g*.12;tCol[i*6+2]=c.b*.12;
-   tCol[i*6+3]=c.r*.95;tCol[i*6+4]=c.g*.95;tCol[i*6+5]=c.b*.95;
+   const bob=Math.sin(t*1.7+a.off*18)*.22;
+   const s=a.size*(1+Math.sin(t*2.3+a.off*9)*.08);
+   setTransform(dots.current,i,x,2.9+bob,z,s,s,s);
   }
-  pa.needsUpdate=true;ca.needsUpdate=true;ta.needsUpdate=true;tca.needsUpdate=true;if(ha)ha.needsUpdate=true;if(hc)hc.needsUpdate=true;
+  dots.current.instanceMatrix.needsUpdate=true;
   invalidate();
  });
  return <group>
-  <points ref={halo} frustumCulled={false}>
-   <bufferGeometry>
-    <bufferAttribute attach="attributes-position" args={[pos,3]}/>
-    <bufferAttribute attach="attributes-color" args={[col,3]}/>
-   </bufferGeometry>
-   <pointsMaterial map={sprite} vertexColors size={16} sizeAttenuation transparent opacity={.22} depthWrite={false} blending={THREE.AdditiveBlending}/>
-  </points>
-  <points ref={points} frustumCulled={false}>
-   <bufferGeometry>
-    <bufferAttribute attach="attributes-position" args={[pos,3]}/>
-    <bufferAttribute attach="attributes-color" args={[col,3]}/>
-   </bufferGeometry>
-   <pointsMaterial map={sprite} vertexColors size={5.0} sizeAttenuation transparent opacity={.95} depthWrite={false} blending={THREE.AdditiveBlending}/>
-  </points>
-  <lineSegments ref={trail} frustumCulled={false}>
-   <bufferGeometry>
-    <bufferAttribute attach="attributes-position" args={[tpos,3]}/>
-    <bufferAttribute attach="attributes-color" args={[tcol,3]}/>
-   </bufferGeometry>
-   <lineBasicMaterial vertexColors transparent opacity={.62} blending={THREE.AdditiveBlending} depthWrite={false}/>
-  </lineSegments>
+  <instancedMesh ref={dots} args={[undefined,undefined,MAX]} frustumCulled={false}>
+   <sphereGeometry args={[1,8,6]}/>
+   <meshBasicMaterial transparent opacity={.85} depthWrite={false}/>
+  </instancedMesh>
  </group>;
 }
 
