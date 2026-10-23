@@ -79,48 +79,75 @@ function Lighting({state}:{state:SceneState}){
 
 
 function CrowdFlow({activity}:{activity:number}){
- const heads=useRef<THREE.InstancedMesh>(null),glow=useRef<THREE.InstancedMesh>(null),trail=useRef<THREE.LineSegments>(null);
+ const points=useRef<THREE.Points>(null),halo=useRef<THREE.Points>(null),trail=useRef<THREE.LineSegments>(null);
  const {invalidate}=useThree();
  const MAX=320;
- const agents=useMemo(()=>{const rnd=seededRandom(20261023);const pool=roads.filter(r=>r.points.length>1);const out:{ax:number;az:number;bx:number;bz:number;off:number;speed:number;dir:number;color:string}[]=[];for(let n=0;n<1200&&out.length<MAX;n++){const road=pool[Math.floor(rnd()*pool.length)];if(!road||road.points.length<2)continue;const i=Math.floor(rnd()*(road.points.length-1));const a=road.points[i],b=road.points[i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<6)continue;out.push({ax:a[0],az:a[1],bx:b[0],bz:b[1],off:rnd(),speed:.008+rnd()*.022,dir:rnd()>.5?1:-1,color:['#4d9be6','#f1c674','#eef4ff','#6fd0c8'][out.length%4]});}return out;},[]);
- const count=Math.min(agents.length,Math.max(0,Math.round(activity*4)));
- const posArr=useMemo(()=>new Float32Array(MAX*2*3),[]);
- const colArr=useMemo(()=>new Float32Array(MAX*2*3),[]);
+ const palette=['#f6c46a','#6fb6f0','#9fe3d0','#ffe1b0'];
+ const agents=useMemo(()=>{const rnd=seededRandom(20261023);const pool=roads.filter(r=>r.points.length>1);const out:{ax:number;az:number;bx:number;bz:number;off:number;speed:number;dir:number;color:string}[]=[];for(let n=0;n<1200&&out.length<MAX;n++){const road=pool[Math.floor(rnd()*pool.length)];if(!road||road.points.length<2)continue;const i=Math.floor(rnd()*(road.points.length-1));const a=road.points[i],b=road.points[i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1]);if(len<6)continue;out.push({ax:a[0],az:a[1],bx:b[0],bz:b[1],off:rnd(),speed:.006+rnd()*.016,dir:rnd()>.5?1:-1,color:palette[out.length%palette.length]});}return out;},[]);
+ const count=Math.min(agents.length,Math.max(0,Math.round(activity*3.6)));
+ const pos=useMemo(()=>new Float32Array(MAX*3),[]);
+ const col=useMemo(()=>new Float32Array(MAX*3),[]);
+ const tpos=useMemo(()=>new Float32Array(MAX*6),[]);
+ const tcol=useMemo(()=>new Float32Array(MAX*6),[]);
+ const sprite=useMemo(()=>{const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d')!;const grad=ctx.createRadialGradient(64,64,0,64,64,64);grad.addColorStop(0,'rgba(255,255,255,1)');grad.addColorStop(.22,'rgba(255,255,255,.9)');grad.addColorStop(.55,'rgba(255,255,255,.22)');grad.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=grad;ctx.fillRect(0,0,128,128);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return tex;},[]);
  useEffect(()=>{
-  if(heads.current&&glow.current){heads.current.count=count;glow.current.count=count;agents.slice(0,count).forEach((a,i)=>{const c=new THREE.Color(a.color);heads.current!.setColorAt(i,c);glow.current!.setColorAt(i,c);});if(heads.current.instanceColor)heads.current.instanceColor.needsUpdate=true;if(glow.current.instanceColor)glow.current.instanceColor.needsUpdate=true;}
+  if(points.current)points.current.geometry.setDrawRange(0,count);
+  if(halo.current)halo.current.geometry.setDrawRange(0,count);
   if(trail.current)trail.current.geometry.setDrawRange(0,count*2);
+  agents.slice(0,count).forEach((a,i)=>{const c=new THREE.Color(a.color);col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;});
+  const ca=points.current?.geometry.attributes.color;if(ca)ca.needsUpdate=true;
   invalidate();
- },[count,agents,invalidate]);
+ },[count,agents,col,invalidate]);
  useFrame(({clock})=>{
-  if(!heads.current||!glow.current||!trail.current||!count)return;
+  if(!points.current||!trail.current||!count)return;
   const t=clock.elapsedTime;
-  const pa=trail.current.geometry.attributes.position as THREE.BufferAttribute;
-  const ca=trail.current.geometry.attributes.color as THREE.BufferAttribute;
-  const pos=pa.array as Float32Array, col=ca.array as Float32Array;
+  const ha=halo.current?.geometry.attributes.position as THREE.BufferAttribute|undefined;
+  const hc=halo.current?.geometry.attributes.color as THREE.BufferAttribute|undefined;
+  const pa=points.current.geometry.attributes.position as THREE.BufferAttribute;
+  const ca=points.current.geometry.attributes.color as THREE.BufferAttribute;
+  const ta=trail.current.geometry.attributes.position as THREE.BufferAttribute;
+  const tca=trail.current.geometry.attributes.color as THREE.BufferAttribute;
+  const pArr=pa.array as Float32Array,pCol=ca.array as Float32Array,tArr=ta.array as Float32Array,tCol=tca.array as Float32Array;
   for(let i=0;i<count;i++){
    const a=agents[i];
    const u=((a.off+t*a.speed*a.dir)%1+1)%1;
    const x=a.ax+(a.bx-a.ax)*u, z=a.az+(a.bz-a.az)*u;
-   const ut=Math.max(0,Math.min(1,u-a.dir*.05));
+   const ut=Math.max(0,Math.min(1,u-a.dir*.1));
    const xt=a.ax+(a.bx-a.ax)*ut, zt=a.az+(a.bz-a.az)*ut;
-   const bob=Math.sin(t*2.2+a.off*20)*.18;
-   setTransform(heads.current,i,x,2.7+bob,z,2.4,2.4,2.4);
-   setTransform(glow.current,i,x,2.7+bob,z,5.6,5.6,5.6);
+   const bob=Math.sin(t*1.6+a.off*18)*.16;
+   pArr[i*3]=x;pArr[i*3+1]=2.8+bob;pArr[i*3+2]=z;
+   pCol[i*3]=pCol[i*3]; // static, but keep for clarity
+   tArr[i*6]=xt;tArr[i*6+1]=2.45;tArr[i*6+2]=zt;
+   tArr[i*6+3]=x;tArr[i*6+4]=2.8+bob;tArr[i*6+5]=z;
    const c=new THREE.Color(a.color);
-   pos[i*6]=xt;pos[i*6+1]=2.5;pos[i*6+2]=zt;
-   pos[i*6+3]=x;pos[i*6+4]=2.7+bob;pos[i*6+5]=z;
-   col[i*6]=c.r*.25;col[i*6+1]=c.g*.25;col[i*6+2]=c.b*.25;
-   col[i*6+3]=c.r;col[i*6+4]=c.g;col[i*6+5]=c.b;
+   tCol[i*6]=c.r*.12;tCol[i*6+1]=c.g*.12;tCol[i*6+2]=c.b*.12;
+   tCol[i*6+3]=c.r*.95;tCol[i*6+4]=c.g*.95;tCol[i*6+5]=c.b*.95;
   }
-  heads.current.instanceMatrix.needsUpdate=true;
-  glow.current.instanceMatrix.needsUpdate=true;
-  pa.needsUpdate=true;ca.needsUpdate=true;
+  pa.needsUpdate=true;ca.needsUpdate=true;ta.needsUpdate=true;tca.needsUpdate=true;if(ha)ha.needsUpdate=true;if(hc)hc.needsUpdate=true;
   invalidate();
  });
  return <group>
-  <instancedMesh ref={glow} args={[undefined,undefined,MAX]} frustumCulled={false}><sphereGeometry args={[1,10,8]}/><meshBasicMaterial transparent opacity={.16} blending={THREE.AdditiveBlending} depthWrite={false}/></instancedMesh>
-  <instancedMesh ref={heads} args={[undefined,undefined,MAX]} frustumCulled={false}><sphereGeometry args={[1,10,8]}/><meshBasicMaterial transparent opacity={.95}/></instancedMesh>
-  <lineSegments ref={trail} frustumCulled={false}><bufferGeometry><bufferAttribute attach="attributes-position" args={[posArr,3]}/><bufferAttribute attach="attributes-color" args={[colArr,3]}/></bufferGeometry><lineBasicMaterial vertexColors transparent opacity={.85} blending={THREE.AdditiveBlending} depthWrite={false}/></lineSegments>
+  <points ref={halo} frustumCulled={false}>
+   <bufferGeometry>
+    <bufferAttribute attach="attributes-position" args={[pos,3]}/>
+    <bufferAttribute attach="attributes-color" args={[col,3]}/>
+   </bufferGeometry>
+   <pointsMaterial map={sprite} vertexColors size={16} sizeAttenuation transparent opacity={.22} depthWrite={false} blending={THREE.AdditiveBlending}/>
+  </points>
+  <points ref={points} frustumCulled={false}>
+   <bufferGeometry>
+    <bufferAttribute attach="attributes-position" args={[pos,3]}/>
+    <bufferAttribute attach="attributes-color" args={[col,3]}/>
+   </bufferGeometry>
+   <pointsMaterial map={sprite} vertexColors size={5.0} sizeAttenuation transparent opacity={.95} depthWrite={false} blending={THREE.AdditiveBlending}/>
+  </points>
+  <lineSegments ref={trail} frustumCulled={false}>
+   <bufferGeometry>
+    <bufferAttribute attach="attributes-position" args={[tpos,3]}/>
+    <bufferAttribute attach="attributes-color" args={[tcol,3]}/>
+   </bufferGeometry>
+   <lineBasicMaterial vertexColors transparent opacity={.62} blending={THREE.AdditiveBlending} depthWrite={false}/>
+  </lineSegments>
  </group>;
 }
 
